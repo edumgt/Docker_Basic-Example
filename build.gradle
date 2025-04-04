@@ -1,0 +1,144 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+//    id 'war'
+}
+
+group = 'com.bekaku.api.spring'
+version = '1.0.0'
+java {
+    sourceCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    configureEach {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+//    Spring and Spring Boot dependencies
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'commons-validator:commons-validator:1.9.0'
+
+//    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // bug whith springboot version 3.2.0 to be develop by mybatis dev
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+
+    implementation 'org.jetbrains:annotations:26.0.2'
+//    Databases
+    implementation 'com.mysql:mysql-connector-j:9.2.0'
+    implementation 'com.zaxxer:HikariCP:6.2.1'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
+            'io.jsonwebtoken:jjwt-orgjson:0.12.6'
+
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+    implementation 'joda-time:joda-time:2.13.0'
+    implementation 'org.modelmapper:modelmapper:3.2.2'
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    //Image
+    implementation 'net.coobird:thumbnailator:0.4.20'
+    implementation 'com.drewnoakes:metadata-extractor:2.19.0'
+    implementation 'org.apache.tika:tika-core:3.0.0'
+    implementation 'org.apache.tika:tika-parsers-standard:3.0.0'
+    implementation 'com.twelvemonkeys.imageio:imageio-webp:3.12.0'
+
+    implementation 'org.apache.poi:poi-ooxml:5.4.0'
+
+//    caching
+//    implementation group: 'javax.cache', name: 'cache-api', version: '1.1.1'
+//    implementation group: 'org.ehcache', name: 'ehcache', version: '3.10.8'
+    implementation 'javax.cache:cache-api:1.1.1'
+    implementation 'org.ehcache:ehcache:3.10.8'
+    implementation 'org.jsoup:jsoup:1.18.3'
+    implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'com.google.firebase:firebase-admin:9.4.3'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.projectlombok:lombok:1.18.30'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+tasks.named('bootBuildImage') {
+    builder = 'paketobuildpacks/builder-jammy-base:latest'
+}
+tasks.register('runGenerateSrc') {
+    def url = 'http://localhost:8080/dev/development/generateSrc'
+    def body = '{}'
+    def content = "content-type:application/json"
+    def command = ['curl', '-s', '--request', 'POST', '--data', body, '--header', content, url]
+    println "command:" + command
+    def proc = command.execute()
+    proc.waitFor()
+    def jsonstr = proc.in.text
+    println jsonstr
+}
+tasks.register('runDev') {
+    dependsOn 'bootRun'
+    bootRun.systemProperty('spring.profiles.active', 'dev')
+}
+tasks.register('runDebug') {
+    // ./gradlew bootRun --args='--debug'
+}
+tasks.register('runProd') {
+    dependsOn 'bootRun'
+    bootRun.systemProperty('spring.profiles.active', 'prod')
+}
+tasks.register('runBuild') {
+    dependsOn 'bootJar'
+    bootRun.systemProperty('spring.profiles.active', 'prod')
+}
