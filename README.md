@@ -246,9 +246,6 @@ wsl --shutdown
 
 ---
 
-### 변경 이력
-- 2026-01-17: Docker Desktop + WSL2 공유 개념 + WSL 멀티 배포판 설치/관리 명령어를 하나의 문서로 통합
-
 
 # Front end
 - Nuxt js + Quasar  [nuxt-quasar-example-app](https://github.com/bekaku/nuxt-quasar-example-app)
