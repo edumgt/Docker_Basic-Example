@@ -245,6 +245,26 @@ wsl --shutdown
 후 다시 WSL 실행하면 적용됩니다.
 
 ---
+---
+
+### linux 의 java update
+```
+sudo apt install -y openjdk-21-jdk
+```
+
+### windows 에서 linux 로 폴더 복제 후 조치
+```
+ubuntu@DESKTOP-8FSFFJK:~/Docker_1$ file ./gradlew
+./gradlew: POSIX shell script, Unicode text, UTF-8 text executable, with CRLF line terminators
+ubuntu@DESKTOP-8FSFFJK:~/Docker_1$ head -n 1 ./gradlew | cat -A
+#!/bin/sh^M$
+ubuntu@DESKTOP-8FSFFJK:~/Docker_1$ sed -i 's/\r$//' ./gradlew
+ubuntu@DESKTOP-8FSFFJK:~/Docker_1$ ./gradlew tasks
+```
+---
+```
+./gradlew build -x test
+```
 
 
 # Front end
