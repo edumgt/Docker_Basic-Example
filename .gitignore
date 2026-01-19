@@ -53,3 +53,6 @@ Thumbs.db
 *.gz
 spring-data/images
 spring-data/logs
+# Gradle build outputs
+/build/
+/**/build/
