@@ -24,8 +24,8 @@ services:
           cpus: "1.0"  # Reserve at least 1 CPU
           memory: "1G"  # Reserve at least 1GB RAM
     volumes:
-      - /srv/spring-data:/usr/spring-data
-      - /srv/spring-data/logs:/usr/spring-data/logs
+      - ${SPRING_DATA_DIR:-/home/ubuntu/spring-data}:/usr/spring-data
+      - ${SPRING_DATA_LOG_DIR:-/home/ubuntu/spring-data/logs}:/usr/spring-data/logs
   linux-api-service-2:
     container_name: linux-api-service-2
     build: .
@@ -38,8 +38,8 @@ services:
     networks:
       - linux-app-network
     volumes:
-      - /srv/spring-data:/usr/spring-data
-      - /srv/spring-data/logs:/usr/spring-data/logs
+      - ${SPRING_DATA_DIR:-/home/ubuntu/spring-data}:/usr/spring-data
+      - ${SPRING_DATA_LOG_DIR:-/home/ubuntu/spring-data/logs}:/usr/spring-data/logs
     environment:
       - JAVA_OPTS=-Xmx512m -Xms512m
 networks:
