@@ -40,37 +40,21 @@ docker compose version
 mkdir -p ~/spring-data/logs
 ```
 
-## 3) 소스 설정 변경 (WSL 경로 반영)
+## 3) 소스 설정 (WSL 자동 대응)
 
-WSL에서는 Windows 경로(`D:/...`) 대신 **Linux 경로**를 사용해야 합니다.
+이제 기본값이 Linux/WSL 친화적으로 리팩토링되어, 별도 소스 수정 없이 실행할 수 있습니다.
 
-### 3-1. `application-dev.yml` 경로 수정
+- `app.cdn-directory`: `${APP_CDN_DIRECTORY:${user.home}/spring-data/}`
+- `log4j2-dev.xml`의 `APP_LOG_ROOT`: `${sys:APP_LOG_ROOT:-${sys:user.home}/spring-data/logs}`
 
-`src/main/resources/application-dev.yml`에서 다음 항목을 **Linux 경로**로 바꿉니다.
+필요하면 환경 변수로 경로를 덮어쓸 수 있습니다.
 
-- `app.cdn-directory`: `~/spring-data/` 형태의 경로 사용
-- `logging.file.path`: `${app.cdn-directory}logs`로 유지 가능
-
-예시:
-
-```yml
-app:
-  cdn-directory: /home/<your-user>/spring-data/
+```bash
+export APP_CDN_DIRECTORY=/home/<your-user>/spring-data/
+export APP_LOG_ROOT=/home/<your-user>/spring-data/logs
 ```
 
-### 3-2. `log4j2-dev.xml` 로그 경로 수정
-
-`src/main/resources/log4j2-dev.xml`에서 `APP_LOG_ROOT`를 WSL 경로로 바꿉니다.
-
-예시:
-
-```xml
-<Property name="APP_LOG_ROOT">/home/<your-user>/spring-data/logs</Property>
-```
-
-> 개발 환경에서 `log4j2-dev.xml`이 사용되므로 경로 수정이 필요합니다.
-
-### 3-3. DB 접속 설정 확인
+### 3-1. DB 접속 설정 확인
 
 `application-dev.yml`의 `spring.datasource` 설정을 WSL 환경에 맞게 수정합니다.
 
@@ -84,19 +68,22 @@ spring:
     password: <your-password>
 ```
 
-## 4) Docker 설정 변경 (WSL 경로 반영)
+## 4) Docker 설정 (환경 변수 기반)
 
-`docker-compose.yml`의 volume 경로가 `/srv/spring-data`로 고정되어 있습니다. WSL 환경에서는 **홈 디렉터리 경로**로 변경하는 것이 안전합니다.
-
-예시:
+`docker-compose.yml`은 WSL에서 바로 동작하도록 기본 Linux 경로를 사용합니다.
 
 ```yml
 volumes:
-  - /home/<your-user>/spring-data:/usr/spring-data
-  - /home/<your-user>/spring-data/logs:/usr/spring-data/logs
+  - ${SPRING_DATA_DIR:-/home/ubuntu/spring-data}:/usr/spring-data
+  - ${SPRING_DATA_LOG_DIR:-/home/ubuntu/spring-data/logs}:/usr/spring-data/logs
 ```
 
-> 위 경로는 WSL 리눅스 파일 시스템 기준입니다. Windows 경로(`/mnt/c/...`)도 가능하지만 성능 이슈가 있을 수 있습니다.
+사용자 계정 경로를 쓰고 싶다면 실행 전에 지정하세요.
+
+```bash
+export SPRING_DATA_DIR=/home/<your-user>/spring-data
+export SPRING_DATA_LOG_DIR=/home/<your-user>/spring-data/logs
+```
 
 ## 5) 실행 방법
 
